@@ -1,0 +1,36 @@
+ecommerce-backend/
+│
+├── config/                  # Firebase and general configuration files
+│   ├── firebaseConfig.js    # Firebase setup
+│   └── serverConfig.js      # General server configuration
+│
+├── controllers/             # Controllers for handling API logic
+│   ├── userController.js    # CRUD operations for users
+│   ├── transactionController.js # CRUD operations for transactions
+│   ├── messageController.js     # CRUD operations for messages
+│   ├── reviewController.js      # CRUD operations for reviews
+│   ├── productController.js     # CRUD operations for products
+│
+├── models/                  # Data models
+│   ├── userModel.js         # User model
+│   ├── transactionModel.js  # Transaction model
+│   ├── messageModel.js      # Message model
+│   ├── reviewModel.js       # Review model
+│   ├── productModel.js      # Product model
+│
+├── routes/                  # API routes
+│   ├── userRoutes.js        # Routes for user CRUD
+│   ├── transactionRoutes.js # Routes for transaction CRUD
+│   ├── messageRoutes.js     # Routes for message CRUD
+│   ├── reviewRoutes.js      # Routes for review CRUD
+│   ├── productRoutes.js     # Routes for product CRUD
+│
+├── services/                # Services layer (optional)
+│   ├── userService.js       # Logic for user-related tasks
+│   ├── transactionService.js # Logic for transaction-related tasks
+│   └── messageService.js     # Logic for message-related tasks
+│
+├── .env                     # Environment variables
+├── package.json             # Dependencies and scripts
+├── server.js                # Entry point for the Express server
+└── README.md                # Documentation
