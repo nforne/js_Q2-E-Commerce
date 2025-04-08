@@ -1,10 +1,12 @@
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../contexts/CartContext";
 import CartItem from "../components/CartItem";
 import styles from "../styles/Cart.module.css";
 
 const Cart = () => {
   const { cartItems, total, updateQuantity, removeItem } = useContext(CartContext);
+  const navigate = useNavigate();
 
   return (
     <div className={styles.cart}>
@@ -18,10 +20,13 @@ const Cart = () => {
       )}
       <div className={styles.total}>
         <h2>Total: ${total.toFixed(2)}</h2>
-        <button className={styles.checkout}>Proceed to Checkout</button>
+        <button className={styles.checkout} onClick={() => navigate("/checkout")}>
+          Proceed to Checkout
+        </button>
       </div>
     </div>
   );
 };
 
 export default Cart;
+

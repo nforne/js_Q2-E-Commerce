@@ -1,0 +1,10 @@
+.confirmation {
+  padding: 20px;
+  text-align: center;
+}
+
+.success {
+  color: green;
+  font-size: 18px;
+  font-weight: bold;
+}

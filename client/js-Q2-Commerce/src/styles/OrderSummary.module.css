@@ -1,0 +1,10 @@
+.summary {
+  padding: 20px;
+  border: 1px solid var(--text-color);
+  border-radius: var(--border-radius);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}

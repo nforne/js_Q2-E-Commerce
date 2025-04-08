@@ -6,6 +6,13 @@ import Home from "./pages/Home";
 
 import { CartProvider } from "./contexts/CartContext";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import NotificationBell from "./components/NotificationBell";
+import OrderConfirmation from "./pages/OrderConfirmation";
+import OrderTracking from "./pages/OrderTracking";
+import OrderHistory from "./pages/OrderHistory";
+import OrderDetails from "./pages/OrderDetails";
+import OrdersView from "./pages/OrdersView";
 
 function App() {
   return (
@@ -13,10 +20,17 @@ function App() {
       <Router>
         <Navbar />
         <ThemeToggle />
-        <Routes>
+        <NotificationBell orderId="1002" /> {/* Example order ID */}
+        <Routes>          
           <Route path="/" element={<Home />} />
           <Route path="/product/:productId" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />  {/* ✅ Cart route added */}
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/confirmation" element={<OrderConfirmation />} />
+          <Route path="/tracking" element={<OrderTracking />} />
+          <Route path="/order-history" element={<OrderHistory />} />          
+          <Route path="/order-details" element={<OrderDetails />} />
+          <Route path="/orders" element={<OrdersView />} />
         </Routes>
       </Router>
     </CartProvider>
@@ -24,27 +38,4 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-// import { useState } from "react";
-// import { ThemeProvider } from "./contexts/ThemeContext";
-// import ThemeToggle from "./components/ThemeToggle";
-// import Navbar from "./components/Navbar";  // ✅ Import Navbar
-
-// function App() {
-//   return (
-//     <ThemeProvider>
-//       <Navbar />   {/* ✅ Navbar should come before ThemeToggle for better placement */}
-//       <ThemeToggle />
-//       {/* Other components */}
-//     </ThemeProvider>
-//   );
-// }
-
-// export default App;
 

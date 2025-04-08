@@ -1,0 +1,31 @@
+.checkout {
+  padding: 20px;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 400px;
+  margin: auto;
+}
+
+input, select, button {
+  padding: 10px;
+  border: 1px solid var(--text-color);
+  border-radius: var(--border-radius);
+}
+
+button {
+  background: var(--accent-color);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.confirmation {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--accent-color);
+}
