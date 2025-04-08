@@ -1,0 +1,75 @@
+js-Q2-Commerce-Frontend/
+│── src/
+│   ├── assets/                # 📂 Static assets such as images, icons, fonts
+│   ├── styles/                # 🎨 Global styles for the entire application
+│   │   ├── globals.css        # 🏗 Base styles, typography, spacing, and general utilities
+│   │   ├── theme.css          # 🎭 Theme styles (dark, grey, light mode definitions)
+│   ├── components/            # 🔧 Reusable UI components
+│   │   ├── Button.jsx         # 🖱 Custom button component
+│   │   ├── Button.module.css  # 🎨 Scoped styles for Button component
+│   │   ├── Navbar.jsx          # 🏠 Navigation bar component
+│   │   ├── Navbar.module.css   # 🎨 Navbar-specific styling
+│   │   ├── InputField.jsx     # 🔠 Custom input field component
+│   │   ├── InputField.module.css # 🎨 Scoped styles for InputField component
+│   │   ├── ProductCard.jsx    # 📦 Displays product information
+│   │   ├── ProductCard.module.css # 🎨 Styles for ProductCard (e.g., layout, hover effects)
+│   │   ├── NotificationBell.jsx # 🔔 Notification UI (alerts, messages)
+│   │   ├── NotificationBell.module.css # 🎨 Styles for NotificationBell component
+│   │   ├── OrderTrackingComponent.jsx  # 📍 Component for displaying order tracking status
+│   │   ├── OrderTrackingComponent.module.css  # 🎨 Styles for order tracking component
+│   │   ├── ThemeToggle.jsx    # 🌗 UI for switching between themes
+│   │   ├── ThemeToggle.module.css # 🎨 Styles for theme toggle UI
+│   ├── context/               # 🌐 Global state management using React Context
+│   │   ├── AuthContext.jsx    # 🔐 Authentication provider (handles login sessions)
+│   │   ├── CartContext.jsx    # 🛒 Shopping cart state management
+│   │   ├── TransactionContext.jsx # 💳 Handles transaction states globally
+│   │   ├── ThemeContext.jsx  # 🎭 Manages theme switching functionality across the app
+│   ├── hooks/                 # 🎣 Custom React hooks for business logic
+│   │   ├── useAuth.jsx        # 🔐 Helper hook for authentication management
+│   │   ├── useCart.jsx        # 🛒 Manages shopping cart logic
+│   │   ├── useTransactions.jsx # 💰 Handles transaction data fetching
+│   │   ├── useTracking.jsx    # 📍 Manages live tracking logic (order tracking)
+│   │   ├── useTheme.jsx       # 🎭 Hook for managing user theme preferences
+│   ├── pages/                 # 📜 Main pages/routes of the application
+│   │   ├── Home.jsx           # 🏠 Homepage (product listings, promotions)
+│   │   ├── Home.module.css    # 🎨 Styles for the homepage
+│   │   ├── ProductDetails.jsx # 🔍 Individual product page (detailed view)
+│   │   ├── ProductDetails.module.css # 🎨 Scoped styles for product details
+│   │   ├── OrderDetails.jsx   # 📦 Order details page (includes tracking)
+│   │   ├── OrderDetails.module.css # 🎨 Styles for order details page
+│   │   ├── OrderTracking.jsx  # 📍 Standalone order tracking page (uses OrderTrackingComponent)
+│   │   ├── OrderTracking.module.css # 🎨 Styles for order tracking page
+│   │   ├── Checkout.jsx       # 💳 Checkout page for payment and shipping
+│   │   ├── Checkout.module.css # 🎨 Checkout page styles
+│   │   ├── Chat.jsx           # 💬 Messaging system for customer-vendor interaction
+│   │   ├── Chat.module.css    # 🎨 Styles for chat page
+│   │   ├── UserProfile.jsx    # 👤 User profile page (view/edit user details)
+│   │   ├── UserProfile.module.css # 🎨 Styles for user profile page
+│   │   ├── Dashboard/         # 📊 Separate dashboards based on user roles
+│   │   │   ├── Customer.jsx   # 🛒 Dashboard for customers (order history, cart)
+│   │   │   ├── Customer.module.css # 🎨 Styles for customer dashboard
+│   │   │   ├── Vendor.jsx     # 🏪 Dashboard for vendors (manage inventory, orders)
+│   │   │   ├── Vendor.module.css # 🎨 Styles for vendor dashboard
+│   │   │   ├── Admin.jsx      # 🛠 Dashboard for administrators (user & privilege control)
+│   │   │   ├── Admin.module.css # 🎨 Styles for admin dashboard
+│   │   │   ├── Privileges.jsx # 🔑 Admin privilege control page (manage user roles)
+│   │   │   ├── Privileges.module.css # 🎨 Styles for privilege management page
+│   ├── services/              # 🔗 API calls & data fetching services
+│   │   ├── authService.js     # 🔐 Authentication API (login, signup, token handling)
+│   │   ├── productService.js  # 📦 Product-related API (fetch products, update inventory)
+│   │   ├── transactionService.js # 💰 Handle transactions & orders API
+│   │   ├── chatService.js     # 💬 Messaging API (send/receive transaction-related messages)
+│   │   ├── privilegeService.js # 🔑 Manage user privileges API
+│   │   ├── trackingService.js  # 📍 Order tracking API
+│   ├── utils/                 # 🔍 Helper functions for formatting and validation
+│   │   ├── formatDate.js      # 🗓 Date formatting utility
+│   │   ├── priceFormatter.js  # 💲 Currency formatting utility
+│   │   ├── statusFormatter.js # 📍 Order tracking status formatting utility
+│   │   ├── validation.js      # ✅ Input validation functions
+│   │   ├── themeConfig.js     # 🎭 Defines theme styles and configurations
+│   ├── App.jsx                # 🚀 Main React app entry point (integrates ThemeContext)
+│   ├── index.jsx              # 🏁 Root file (renders App.jsx)
+│── public/                    # 🌎 Public assets & index.html (entry HTML file)
+│── package.json                # 📦 Project dependencies & scripts
+│── README.md                   # 📖 Documentation for project setup and usage
+│── .gitignore                  # 🚫 Files excluded from version control (Git)

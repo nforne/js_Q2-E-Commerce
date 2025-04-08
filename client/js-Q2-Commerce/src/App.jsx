@@ -1,35 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Navbar from "./components/Navbar";
+import ThemeToggle from "./components/ThemeToggle";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProductDetails from "./pages/ProductDetails";
+import Home from "./pages/Home";
+
+import { CartProvider } from "./contexts/CartContext";
+import Cart from "./pages/Cart";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <CartProvider>
+      <Router>
+        <Navbar />
+        <ThemeToggle />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:productId" element={<ProductDetails />} />
+          <Route path="/cart" element={<Cart />} />  {/* ✅ Cart route added */}
+        </Routes>
+      </Router>
+    </CartProvider>
+  );
 }
 
-export default App
+export default App;
+
+
+
+
+
+
+
+// import { useState } from "react";
+// import { ThemeProvider } from "./contexts/ThemeContext";
+// import ThemeToggle from "./components/ThemeToggle";
+// import Navbar from "./components/Navbar";  // ✅ Import Navbar
+
+// function App() {
+//   return (
+//     <ThemeProvider>
+//       <Navbar />   {/* ✅ Navbar should come before ThemeToggle for better placement */}
+//       <ThemeToggle />
+//       {/* Other components */}
+//     </ThemeProvider>
+//   );
+// }
+
+// export default App;
+

@@ -1,0 +1,36 @@
+.card {
+  border: 1px solid var(--text-color);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius);
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.price {
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.8;
+}

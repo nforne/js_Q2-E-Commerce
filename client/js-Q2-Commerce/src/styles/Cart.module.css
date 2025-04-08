@@ -1,0 +1,18 @@
+.cart {
+  padding: 20px;
+  text-align: center;
+}
+
+.total {
+  margin-top: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.checkout {
+  padding: 10px 20px;
+  background: var(--accent-color);
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
