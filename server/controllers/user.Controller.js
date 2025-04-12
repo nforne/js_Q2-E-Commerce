@@ -144,6 +144,7 @@ export async function getAllUsers(req, res) {
 import gDB from '../config/firebaseConfig.js';
 import Joi from 'joi';
 import { verifyPassword, generateJwtToken, hashPassword } from './auth.Controller.js';
+import { logEvent } from '../services/logging.js';
 
 // Reference Firestore
 const firestore = gDB.db;
@@ -191,13 +192,11 @@ export async function signIn(req, res) {
       password: Joi.string().min(6).max(128).required(),
     });
 
-    // Validate input
     const { error } = signInSchema.validate(req.body);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
     const { email, password } = req.body;
 
-    // Find user by email in Firestore
     const userSnapshot = await firestore.collection('users').where('email', '==', email).get();
 
     if (userSnapshot.empty) {
@@ -206,14 +205,15 @@ export async function signIn(req, res) {
 
     const user = userSnapshot.docs[0].data();
 
-    // Verify the password
     const passwordMatch = verifyPassword(password, user.password);
     if (!passwordMatch) {
       return res.status(401).send({ message: 'Invalid email or password.' });
     }
 
-    // Generate JWT token
     const token = generateJwtToken(user);
+
+    // Log user sign-in
+    await logEvent('User Sign-In', user.user_id, { email });
 
     res.status(200).send({ message: 'Sign-in successful.', token });
   } catch (error) {
@@ -224,23 +224,21 @@ export async function signIn(req, res) {
 // Create a new user
 export async function createUser(req, res) {
   try {
-    // Validate user input
     const { error } = userSchema.validate(req.body);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
-    // Hash password
     req.body.password = hashPassword(req.body.password);
 
     const userData = req.body;
-
-    // Generate a unique user ID
     const userRef = firestore.collection('users').doc();
     const userId = userRef.id;
 
     const completeUserData = { ...userData, user_id: userId };
 
-    // Save the user to Firestore
     await userRef.set(completeUserData);
+
+    // Log user creation
+    await logEvent('User Created', userId, completeUserData);
 
     res.status(201).send({ message: 'User created successfully.', userId });
   } catch (error) {
@@ -270,15 +268,10 @@ export async function updateUser(req, res) {
     const userId = req.params.id;
     const updates = req.body;
 
-    // Validate input for updates
-    const updateSchema = userSchema.fork(
-      ['first_name', 'last_name', 'email', 'password', 'role', 'shopping_cart', 'transactions', 'address', 'payment_method', 'privileges', 'messages'],
-      (field) => field.optional()
-    );
+    const updateSchema = userSchema.fork(Object.keys(userSchema.describe().keys), (field) => field.optional());
     const { error } = updateSchema.validate(updates);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
-    // Check if user exists
     const userRef = firestore.collection('users').doc(userId);
     const userDoc = await userRef.get();
     if (!userDoc.exists) {
@@ -286,6 +279,10 @@ export async function updateUser(req, res) {
     }
 
     await userRef.update(updates);
+
+    // Log user update
+    await logEvent('User Updated', userId, updates);
+
     res.status(200).send({ message: 'User updated successfully.' });
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -297,7 +294,6 @@ export async function deleteUser(req, res) {
   try {
     const userId = req.params.id;
 
-    // Delete from Firestore
     const userRef = firestore.collection('users').doc(userId);
     const userDoc = await userRef.get();
     if (!userDoc.exists) {
@@ -305,6 +301,10 @@ export async function deleteUser(req, res) {
     }
 
     await userRef.delete();
+
+    // Log user deletion
+    await logEvent('User Deleted', userId, {});
+
     res.status(200).send({ message: 'User deleted successfully.' });
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -330,5 +330,6 @@ export async function getAllUsers(req, res) {
     res.status(500).send({ error: error.message });
   }
 }
+
 
 */

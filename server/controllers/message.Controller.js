@@ -107,180 +107,9 @@ export async function getAllMessages(req, res) {
 // -----------------------------------------------------------------------------------------------------------
 /*
 import gDB from '../config/firebaseConfig.js';
-
-// Reference Firestore
-const firestore = gDB.db;
-
-// Create a new message (Customers and Vendors within a transaction)
-export async function createMessage(req, res) {
-  try {
-    // Check if the user has privileges to communicate within a transaction
-    if (!req.user.privileges.transactionCommunication?.isGranted) {
-      return res.status(403).send({ message: 'Forbidden: Insufficient privileges to send a message.' });
-    }
-
-    const messageData = req.body;
-
-    // Validate that the sender and receiver are part of the same transaction
-    const transactionDoc = await firestore.collection('transactions').doc(messageData.transaction_id).get();
-    if (!transactionDoc.exists) {
-      return res.status(404).send({ message: 'Transaction not found.' });
-    }
-
-    const transactionData = transactionDoc.data();
-    const { sender_id, receiver_id } = messageData;
-
-    if (![transactionData.user_id, transactionData.vendor_id].includes(sender_id) ||
-        ![transactionData.user_id, transactionData.vendor_id].includes(receiver_id)) {
-      return res.status(403).send({ message: 'Forbidden: Sender and receiver must be part of the transaction.' });
-    }
-
-    // Generate a unique message ID
-    const messageRef = firestore.collection('messages').doc();
-    const messageId = messageRef.id;
-
-    // Add message metadata
-    const completeMessageData = {
-      ...messageData,
-      message_id: messageId,
-      sent_at: new Date(),
-      is_read: false,
-    };
-
-    // Save the message in Firestore
-    await messageRef.set(completeMessageData);
-
-    res.status(201).send({ message: 'Message created successfully.', messageId });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Get a specific message by ID
-export async function getMessage(req, res) {
-  try {
-    const messageId = req.params.id;
-    const messageDoc = await firestore.collection('messages').doc(messageId).get();
-
-    if (!messageDoc.exists) {
-      return res.status(404).send({ message: 'Message not found.' });
-    }
-
-    const messageData = messageDoc.data();
-
-    // Restrict access based on transaction involvement
-    if (
-      req.user.role !== 'administrator' &&
-      ![messageData.sender_id, messageData.receiver_id].includes(req.user.user_id)
-    ) {
-      return res.status(403).send({ message: 'Forbidden: You can only access messages you are part of.' });
-    }
-
-    res.status(200).send(messageData);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Update a message's details by ID
-export async function updateMessage(req, res) {
-  try {
-    const messageId = req.params.id;
-    const updates = req.body;
-
-    const messageRef = firestore.collection('messages').doc(messageId);
-    const messageDoc = await messageRef.get();
-
-    if (!messageDoc.exists) {
-      return res.status(404).send({ message: 'Message not found.' });
-    }
-
-    const messageData = messageDoc.data();
-
-    // Restrict updates to the sender of the message or administrators
-    if (
-      req.user.role !== 'administrator' &&
-      messageData.sender_id !== req.user.user_id
-    ) {
-      return res.status(403).send({ message: 'Forbidden: You can only update messages you have sent.' });
-    }
-
-    // Save the updated message in Firestore
-    await messageRef.update(updates);
-
-    res.status(200).send({ message: 'Message updated successfully.' });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Delete a message by ID
-export async function deleteMessage(req, res) {
-  try {
-    const messageId = req.params.id;
-
-    const messageRef = firestore.collection('messages').doc(messageId);
-    const messageDoc = await messageRef.get();
-
-    if (!messageDoc.exists) {
-      return res.status(404).send({ message: 'Message not found.' });
-    }
-
-    const messageData = messageDoc.data();
-
-    // Restrict deletion to the sender of the message or administrators
-    if (
-      req.user.role !== 'administrator' &&
-      messageData.sender_id !== req.user.user_id
-    ) {
-      return res.status(403).send({ message: 'Forbidden: You can only delete messages you have sent.' });
-    }
-
-    // Delete the message from Firestore
-    await messageRef.delete();
-
-    res.status(200).send({ message: 'Message deleted successfully.' });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Get all messages (Admins can access all; users see threads they are part of)
-export async function getAllMessages(req, res) {
-  try {
-    const messageSnapshot = await firestore.collection('messages').get();
-
-    if (messageSnapshot.empty) {
-      return res.status(404).send({ message: 'No messages found.' });
-    }
-
-    const messages = [];
-    messageSnapshot.forEach(doc => {
-      messages.push(doc.data());
-    });
-
-    // Filter messages based on roles
-    if (req.user.role !== 'administrator') {
-      const userMessages = messages.filter(
-        message =>
-          message.sender_id === req.user.user_id || message.receiver_id === req.user.user_id
-      );
-      return res.status(200).send(userMessages);
-    }
-
-    res.status(200).send(messages);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-*/
-
-// -----------------------------------------------------------------------------------------------------------
-/*
-import gDB from '../config/firebaseConfig.js';
 import Joi from 'joi';
 import Message from '../models/message.model.js';
+import { logEvent } from '../services/logging.js';
 
 // Reference Firestore
 const firestore = gDB.db;
@@ -333,6 +162,9 @@ export async function createMessage(req, res) {
 
     await messageRef.set({ ...message });
 
+    // Log message creation
+    await logEvent('Message Created', sender_id, { messageId, transaction_id: messageData.transaction_id, receiver_id });
+
     res.status(201).send({ message: 'Message created successfully.', messageId });
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -364,64 +196,66 @@ export async function getMessage(req, res) {
   }
 }
 
-// Update a message
-export async function updateMessage(req, res) {
+// Get messages by user ID (Includes sent and received messages)
+export async function getMessagesByUser(req, res) {
   try {
-    const messageId = req.params.id;
-    const updates = req.body;
+    const userId = req.params.user_id;
 
-    const updateSchema = messageSchema.fork(Object.keys(messageSchema.describe().keys), (field) => field.optional());
-    const { error } = updateSchema.validate(updates);
+    // Validate user ID
+    const userValidationSchema = Joi.object({
+      user_id: Joi.string().required(),
+    });
+
+    const { error } = userValidationSchema.validate({ user_id: userId });
     if (error) return res.status(400).send({ message: error.details[0].message });
 
-    const messageRef = firestore.collection('messages').doc(messageId);
-    const messageDoc = await messageRef.get();
+    const messageSnapshot = await firestore.collection('messages')
+      .where('sender_id', '==', userId)
+      .get();
 
-    if (!messageDoc.exists) {
-      return res.status(404).send({ message: 'Message not found.' });
+    const receivedMessageSnapshot = await firestore.collection('messages')
+      .where('receiver_id', '==', userId)
+      .get();
+
+    if (messageSnapshot.empty && receivedMessageSnapshot.empty) {
+      return res.status(404).send({ message: 'No messages found for this user.' });
     }
 
-    const messageData = messageDoc.data();
+    const messages = [];
+    messageSnapshot.forEach(doc => messages.push(doc.data()));
+    receivedMessageSnapshot.forEach(doc => messages.push(doc.data()));
 
-    if (
-      req.user.role !== 'administrator' &&
-      messageData.sender_id !== req.user.user_id
-    ) {
-      return res.status(403).send({ message: 'Forbidden: You can only update messages you have sent.' });
-    }
-
-    await messageRef.update(updates);
-
-    res.status(200).send({ message: 'Message updated successfully.' });
+    res.status(200).send(messages);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
 }
 
-// Mark a message as read
-export async function markMessageAsRead(req, res) {
+// Get messages by transaction ID
+export async function getMessagesByTransaction(req, res) {
   try {
-    const messageId = req.params.id;
+    const transactionId = req.params.transaction_id;
 
-    const messageRef = firestore.collection('messages').doc(messageId);
-    const messageDoc = await messageRef.get();
+    // Validate transaction ID
+    const transactionValidationSchema = Joi.object({
+      transaction_id: Joi.string().required(),
+    });
 
-    if (!messageDoc.exists) {
-      return res.status(404).send({ message: 'Message not found.' });
+    const { error } = transactionValidationSchema.validate({ transaction_id: transactionId });
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const messageSnapshot = await firestore.collection('messages')
+      .where('transaction_id', '==', transactionId)
+      .get();
+
+    if (messageSnapshot.empty) {
+      return res.status(404).send({ message: 'No messages found for this transaction.' });
     }
 
-    const messageData = messageDoc.data();
+    const messages = [];
+    messageSnapshot.forEach(doc => messages.push(doc.data()));
 
-    if (
-      req.user.role !== 'administrator' &&
-      messageData.receiver_id !== req.user.user_id
-    ) {
-      return res.status(403).send({ message: 'Forbidden: Only the recipient can mark the message as read.' });
-    }
-
-    await messageRef.update({ is_read: true });
-
-    res.status(200).send({ message: 'Message marked as read.' });
+    res.status(200).send(messages);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -439,22 +273,17 @@ export async function deleteMessage(req, res) {
       return res.status(404).send({ message: 'Message not found.' });
     }
 
-    const messageData = messageDoc.data();
-
-    if (
-      req.user.role !== 'administrator' &&
-      messageData.sender_id !== req.user.user_id
-    ) {
-      return res.status(403).send({ message: 'Forbidden: You can only delete messages you have sent.' });
-    }
-
     await messageRef.delete();
+
+    // Log message deletion
+    await logEvent('Message Deleted', req.user.user_id, { message_id: messageId });
 
     res.status(200).send({ message: 'Message deleted successfully.' });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
 }
+
 
 */
 

@@ -29,27 +29,32 @@ import {
   getMessage,
   updateMessage,
   deleteMessage,
-  getAllMessages,
+  getMessagesByUser,
+  getMessagesByTransaction,
 } from '../controllers/message.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Create a new message (Customers and vendors related to a transaction)
+// Create a new message (Users involved in transactions only)
 router.post('/', authenticateAndAuthorize(['transactionCommunication'], null), createMessage);
 
-// Read a specific message by ID (Customers and vendors can access their own threads; admins can access all)
+// Read a specific message by ID (Admins, sender, or receiver)
 router.get('/:id', authenticateAndAuthorize([], null, true), getMessage);
 
-// Update a message's details by ID (Users can update their own messages; admins can update any message)
+// Get messages by user ID (Admins, sender, or receiver)
+router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getMessagesByUser);
+
+// Get messages by transaction ID (Admins, sender, or receiver)
+router.get('/transaction/:transaction_id', authenticateAndAuthorize([], null, true), getMessagesByTransaction);
+
+// Update a message (Admins or sender only)
 router.put('/:id', authenticateAndAuthorize([], null, true), updateMessage);
 
-// Delete a message by ID (Users can delete their own messages; admins can delete any message)
+// Delete a message (Admins or sender only)
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteMessage);
 
-// Get all messages (Admins can access all; users can filter by transactions they are part of)
-router.get('/', authenticateAndAuthorize(['reporting'], 'administrator'), getAllMessages);
-
 export default router;
+
 
 */

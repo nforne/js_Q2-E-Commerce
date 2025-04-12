@@ -30,25 +30,45 @@ import {
   updateReview,
   deleteReview,
   getAllReviews,
+  getReviewsByUser,
+  getReviewsByVendor,
+  getReviewsByProduct,
+  getReviewsByUserVendor,
+  getReviewsByUserProduct,
 } from '../controllers/review.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Create a new review (Customers only for purchased products)
+// Create a new review (Customers only)
 router.post('/', authenticateAndAuthorize(['shopping'], 'customer'), createReview);
 
-// Read a specific review by ID (Customers can view their own; vendors/admins can access broader reviews)
+// Read a specific review by ID (Admins, the reviewer, or the vendor related to the review)
 router.get('/:id', authenticateAndAuthorize([], null, true), getReview);
 
-// Update a review's details by ID (Customers can update their own; admins can update any review)
+// Get all reviews (Admins and Vendors)
+router.get('/', authenticateAndAuthorize(['reporting'], null), getAllReviews);
+
+// Get reviews by user ID (Admins and users retrieving their own reviews)
+router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getReviewsByUser);
+
+// Get reviews by vendor ID (Admins and vendors viewing reviews related to them)
+router.get('/vendor/:vendor_id', authenticateAndAuthorize([], null, true), getReviewsByVendor);
+
+// Get reviews by product ID (Admins and vendors viewing reviews related to products)
+router.get('/product/:product_id', authenticateAndAuthorize([], null, true), getReviewsByProduct);
+
+// Get reviews by user ID & vendor ID (Admins and users retrieving their own vendor-specific reviews)
+router.get('/user/:user_id/vendor/:vendor_id', authenticateAndAuthorize([], null, true), getReviewsByUserVendor);
+
+// Get reviews by user ID & product ID (Admins and users retrieving their own product-specific reviews)
+router.get('/user/:user_id/product/:product_id', authenticateAndAuthorize([], null, true), getReviewsByUserProduct);
+
+// Update a review (Admins or the original reviewer)
 router.put('/:id', authenticateAndAuthorize([], null, true), updateReview);
 
-// Delete a review by ID (Customers can delete their own; admins can delete any review)
+// Delete a review (Admins or the original reviewer)
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteReview);
-
-// Get all reviews (Admins access all; vendors can access reviews for their products)
-router.get('/', authenticateAndAuthorize(['reporting'], 'administrator'), getAllReviews);
 
 export default router;
 

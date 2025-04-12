@@ -29,27 +29,36 @@ import {
   getProduct,
   updateProduct,
   deleteProduct,
-  getAllProducts,
+  getProductsByUser,
+  getProductsByCategory,
+  getProductsByBusiness,
 } from '../controllers/product.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Create a new product (Vendors only)
-router.post('/', authenticateAndAuthorize(['productManagement'], 'vendor'), createProduct);
+// Create a new product (Vendors and Admins)
+router.post('/', authenticateAndAuthorize(['productManagement'], null), createProduct);
 
-// Read a specific product by ID (Open to all users including customers)
-router.get('/:id', authenticateAndAuthorize([], null), getProduct);
+// Read a specific product by ID (Anyone)
+router.get('/:id', getProduct);
 
-// Update a product's details by ID (Vendors can update their own products; admins can update any product)
-router.put('/:id', authenticateAndAuthorize(['productManagement'], null), updateProduct);
+// Get products by vendor ID (User ID)
+router.get('/user/:user_id', getProductsByUser);
 
-// Delete a product by ID (Vendors can delete their own products; admins can delete any product)
-router.delete('/:id', authenticateAndAuthorize(['productManagement'], null), deleteProduct);
+// Get products by category ID (Anyone)
+router.get('/category/:category_id', getProductsByCategory);
 
-// Get all products (Admins have unrestricted access; vendors see their own products)
-router.get('/', authenticateAndAuthorize(['reporting'], 'administrator'), getAllProducts);
+// Get products by business ID (Anyone)
+router.get('/business/:business_id', getProductsByBusiness);
+
+// Update a product (Admins can update any product; Vendors can update their own)
+router.put('/:id', authenticateAndAuthorize([], null, true), updateProduct);
+
+// Delete a product (Admins can delete any product; Vendors can delete their own)
+router.delete('/:id', authenticateAndAuthorize([], null, true), deleteProduct);
 
 export default router;
+
 
 */

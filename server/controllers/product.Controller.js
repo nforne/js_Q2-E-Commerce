@@ -108,44 +108,45 @@ export async function getAllProducts(req, res) {
 /*
 import gDB from '../config/firebaseConfig.js';
 import Joi from 'joi';
-import Product from '../models/product.model.js';
+import { logEvent } from '../services/logging.js';
 
 // Reference Firestore
 const firestore = gDB.db;
 
-// Joi schema for products
+// Joi schema for product validation
 const productSchema = Joi.object({
-  name: Joi.string().min(3).max(100).required(), // Product name
-  description: Joi.string().max(500).required(), // Description with max length of 500 characters
-  price: Joi.number().positive().required(), // Price must be positive
-  stock_quantity: Joi.number().integer().min(0).required(), // Stock cannot be negative
-  category_id: Joi.string().required(), // Category ID
-  business_id: Joi.string().required(), // Business ID
-  reorder_threshold: Joi.number().integer().min(0).optional(), // Optional threshold for reorder
+  name: Joi.string().min(3).max(100).required(),
+  description: Joi.object({
+    text: Joi.string().max(500).required(),
+    images: Joi.array().items(Joi.string().uri()).optional(),
+  }).required(),
+  price: Joi.number().positive().required(),
+  stock_quantity: Joi.number().integer().min(0).required(),
+  category_id: Joi.string().required(),
+  business_id: Joi.string().required(),
 });
 
 // Create a new product
 export async function createProduct(req, res) {
   try {
-    if (req.user.role !== 'vendor' || !req.user.privileges.productManagement?.isGranted) {
-      return res.status(403).send({ message: 'Forbidden: Insufficient privileges to create a product.' });
+    if (req.user.role !== 'vendor') {
+      return res.status(403).send({ message: 'Forbidden: Only vendors can create products.' });
     }
 
-    // Validate user input
     const { error } = productSchema.validate(req.body);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
     const productData = req.body;
-    const completeProductData = {
-      ...productData,
-      business_id: req.user.user_id,
-    };
 
     const productRef = firestore.collection('products').doc();
     const productId = productRef.id;
-    completeProductData.product_id = productId;
+
+    const completeProductData = { ...productData, product_id: productId };
 
     await productRef.set(completeProductData);
+
+    // Log product creation
+    await logEvent('Product Created', req.user.user_id, completeProductData);
 
     res.status(201).send({ message: 'Product created successfully.', productId });
   } catch (error) {
@@ -153,7 +154,7 @@ export async function createProduct(req, res) {
   }
 }
 
-// Get a specific product
+// Get a specific product by ID
 export async function getProduct(req, res) {
   try {
     const productId = req.params.id;
@@ -169,15 +170,70 @@ export async function getProduct(req, res) {
   }
 }
 
+// Get products by user ID (Vendor)
+export async function getProductsByUser(req, res) {
+  try {
+    const userId = req.params.user_id;
+    const productSnapshot = await firestore.collection('products').where('business_id', '==', userId).get();
+
+    if (productSnapshot.empty) {
+      return res.status(404).send({ message: 'No products found for this vendor.' });
+    }
+
+    const products = [];
+    productSnapshot.forEach(doc => products.push(doc.data()));
+
+    res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Get products by category ID
+export async function getProductsByCategory(req, res) {
+  try {
+    const categoryId = req.params.category_id;
+    const productSnapshot = await firestore.collection('products').where('category_id', '==', categoryId).get();
+
+    if (productSnapshot.empty) {
+      return res.status(404).send({ message: 'No products found in this category.' });
+    }
+
+    const products = [];
+    productSnapshot.forEach(doc => products.push(doc.data()));
+
+    res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Get products by business ID
+export async function getProductsByBusiness(req, res) {
+  try {
+    const businessId = req.params.business_id;
+    const productSnapshot = await firestore.collection('products').where('business_id', '==', businessId).get();
+
+    if (productSnapshot.empty) {
+      return res.status(404).send({ message: 'No products found for this business.' });
+    }
+
+    const products = [];
+    productSnapshot.forEach(doc => products.push(doc.data()));
+
+    res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
 // Update a product
 export async function updateProduct(req, res) {
   try {
     const productId = req.params.id;
     const updates = req.body;
 
-    // Make fields optional for updates
     const updateSchema = productSchema.fork(Object.keys(productSchema.describe().keys), (field) => field.optional());
-
     const { error } = updateSchema.validate(updates);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
@@ -190,13 +246,14 @@ export async function updateProduct(req, res) {
 
     const productData = productDoc.data();
 
-    if (req.user.role === 'vendor' && productData.business_id !== req.user.user_id) {
-      return res.status(403).send({ message: 'Forbidden: You can only update products you manage.' });
-    } else if (req.user.role !== 'administrator' && req.user.role !== 'vendor') {
-      return res.status(403).send({ message: 'Forbidden: Insufficient privileges to update products.' });
+    if (req.user.role !== 'vendor' || productData.business_id !== req.user.user_id) {
+      return res.status(403).send({ message: 'Forbidden: Only vendors can update their own products.' });
     }
 
     await productRef.update(updates);
+
+    // Log product update
+    await logEvent('Product Updated', req.user.user_id, updates);
 
     res.status(200).send({ message: 'Product updated successfully.' });
   } catch (error) {
@@ -218,13 +275,14 @@ export async function deleteProduct(req, res) {
 
     const productData = productDoc.data();
 
-    if (req.user.role === 'vendor' && productData.business_id !== req.user.user_id) {
-      return res.status(403).send({ message: 'Forbidden: You can only delete products you manage.' });
-    } else if (req.user.role !== 'administrator' && req.user.role !== 'vendor') {
-      return res.status(403).send({ message: 'Forbidden: Insufficient privileges to delete products.' });
+    if (req.user.role !== 'vendor' || productData.business_id !== req.user.user_id) {
+      return res.status(403).send({ message: 'Forbidden: Only vendors can delete their own products.' });
     }
 
     await productRef.delete();
+
+    // Log product deletion
+    await logEvent('Product Deleted', req.user.user_id, { product_id: productId });
 
     res.status(200).send({ message: 'Product deleted successfully.' });
   } catch (error) {
@@ -232,68 +290,6 @@ export async function deleteProduct(req, res) {
   }
 }
 
-// Get all products
-export async function getAllProducts(req, res) {
-  try {
-    const productSnapshot = await firestore.collection('products').get();
-
-    if (productSnapshot.empty) {
-      return res.status(404).send({ message: 'No products found.' });
-    }
-
-    const products = [];
-    productSnapshot.forEach((doc) => {
-      products.push(doc.data());
-    });
-
-    if (req.user.role === 'vendor') {
-      const vendorProducts = products.filter((product) => product.business_id === req.user.user_id);
-      return res.status(200).send(vendorProducts);
-    } else if (req.user.role !== 'administrator' && req.user.role !== 'vendor') {
-      return res.status(403).send({ message: 'Forbidden: Insufficient privileges to view all products.' });
-    }
-
-    res.status(200).send(products);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Trigger reorder alert on purchase
-export async function handlePurchase(req, res) {
-  try {
-    const { products } = req.body;
-
-    for (const { product_id, quantity } of products) {
-      const productRef = firestore.collection('products').doc(product_id);
-      const productDoc = await productRef.get();
-
-      if (!productDoc.exists) {
-        return res.status(404).send({ message: `Product with ID ${product_id} not found.` });
-      }
-
-      const productData = productDoc.data();
-
-      // Adjust stock quantity
-      const updatedStock = productData.stock_quantity - quantity;
-      if (updatedStock < 0) {
-        return res.status(400).send({ message: `Insufficient stock for product: ${productData.name}.` });
-      }
-
-      await productRef.update({ stock_quantity: updatedStock });
-
-      // Trigger reorder alert
-      if (updatedStock <= productData.reorder_threshold) {
-        console.log(`Reorder Alert: Stock for product "${productData.name}" is below the threshold.`);
-        // Notify vendor (email/notification logic goes here)
-      }
-    }
-
-    res.status(200).send({ message: 'Purchase processed successfully.' });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
 
 
 

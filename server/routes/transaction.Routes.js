@@ -30,27 +30,32 @@ import {
   updateTransaction,
   deleteTransaction,
   getAllTransactions,
+  getTransactionsByUser,
 } from '../controllers/transaction.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
 // Create a new transaction (Customers only)
-router.post('/', authenticateAndAuthorize(['shopping'], 'customer'), createTransaction);
+router.post('/', authenticateAndAuthorize(['transactionCreation'], 'customer'), createTransaction);
 
-// Read a specific transaction by ID (Customers can access their own; vendors/admins have broader access)
+// Read a specific transaction by ID (Customers and Vendors linked to transaction)
 router.get('/:id', authenticateAndAuthorize([], null, true), getTransaction);
 
-// Update a transaction's details by ID (Vendors/admins have specific access)
-router.put('/:id', authenticateAndAuthorize(['orderFulfillment'], null), updateTransaction);
+// Update a transaction's details by ID (Admins and Customers involved in transaction)
+router.put('/:id', authenticateAndAuthorize([], null, true), updateTransaction);
 
-// Delete a transaction by ID (Vendors/admins have specific access)
-router.delete('/:id', authenticateAndAuthorize(['orderFulfillment'], null), deleteTransaction);
+// Delete a transaction by ID (Admins and Customers involved in transaction)
+router.delete('/:id', authenticateAndAuthorize([], null, true), deleteTransaction);
 
-// Get all transactions (Vendors access related transactions; admins access all)
+// Get all transactions (Admins only)
 router.get('/', authenticateAndAuthorize(['reporting'], 'administrator'), getAllTransactions);
 
+// Get transactions by user ID (Customers only for their transactions)
+router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getTransactionsByUser);
+
 export default router;
+
 
 
 */
