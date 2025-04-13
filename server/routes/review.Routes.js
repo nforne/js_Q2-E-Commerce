@@ -35,6 +35,7 @@ import {
   getReviewsByProduct,
   getReviewsByUserVendor,
   getReviewsByUserProduct,
+  getReviewsByIds,
 } from '../controllers/review.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
@@ -63,6 +64,9 @@ router.get('/user/:user_id/vendor/:vendor_id', authenticateAndAuthorize([], null
 
 // Get reviews by user ID & product ID (Admins and users retrieving their own product-specific reviews)
 router.get('/user/:user_id/product/:product_id', authenticateAndAuthorize([], null, true), getReviewsByUserProduct);
+
+// Get multiple reviews by list of IDs (Any authenticated user)
+router.post('/list', authenticateAndAuthorize([], null, true), getReviewsByIds);
 
 // Update a review (Admins or the original reviewer)
 router.put('/:id', authenticateAndAuthorize([], null, true), updateReview);

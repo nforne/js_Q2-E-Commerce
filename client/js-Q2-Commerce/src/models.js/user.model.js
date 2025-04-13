@@ -16,6 +16,7 @@ class User {
     email,
     password,
     created_at,
+    picture,
     role,
     shopping_cart = [],
     transactions = [],
@@ -39,6 +40,7 @@ class User {
     this.password = password; // Hashed password
     this.created_at = created_at; // Account creation date
     this.role = role; // Enum (customer, vendor, administrator)
+    this.picture = picture;
     this.shopping_cart = shopping_cart; // Array of product objects
     this.transactions = transactions; // Array of transaction IDs
     this.addresses = new this.#_Collection(address); // Collection of address objects

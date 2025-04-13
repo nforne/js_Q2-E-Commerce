@@ -126,6 +126,11 @@ const productSchema = Joi.object({
   business_id: Joi.string().required(),
 });
 
+// Joi schema for product ID list validation
+const productIdListSchema = Joi.object({
+  product_ids: Joi.array().items(Joi.string()).min(1).required(),
+});
+
 // Create a new product
 export async function createProduct(req, res) {
   try {
@@ -165,6 +170,24 @@ export async function getProduct(req, res) {
     }
 
     res.status(200).send(productDoc.data());
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Get all products
+export async function getAllProducts(req, res) {
+  try {
+    const productSnapshot = await firestore.collection('products').get();
+
+    if (productSnapshot.empty) {
+      return res.status(404).send({ message: 'No products found.' });
+    }
+
+    const products = [];
+    productSnapshot.forEach(doc => products.push(doc.data()));
+
+    res.status(200).send(products);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -227,27 +250,42 @@ export async function getProductsByBusiness(req, res) {
   }
 }
 
+// Get multiple products by list of IDs
+export async function getProductsByIds(req, res) {
+  try {
+    const { error } = productIdListSchema.validate(req.body);
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const { product_ids } = req.body;
+
+    const productSnapshot = await firestore.collection('products')
+      .where('product_id', 'in', product_ids)
+      .get();
+
+    if (productSnapshot.empty) {
+      return res.status(404).send({ message: 'No products found for the given IDs.' });
+    }
+
+    const products = [];
+    productSnapshot.forEach(doc => products.push(doc.data()));
+
+    res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
 // Update a product
 export async function updateProduct(req, res) {
   try {
     const productId = req.params.id;
     const updates = req.body;
 
-    const updateSchema = productSchema.fork(Object.keys(productSchema.describe().keys), (field) => field.optional());
-    const { error } = updateSchema.validate(updates);
-    if (error) return res.status(400).send({ message: error.details[0].message });
-
     const productRef = firestore.collection('products').doc(productId);
     const productDoc = await productRef.get();
 
     if (!productDoc.exists) {
       return res.status(404).send({ message: 'Product not found.' });
-    }
-
-    const productData = productDoc.data();
-
-    if (req.user.role !== 'vendor' || productData.business_id !== req.user.user_id) {
-      return res.status(403).send({ message: 'Forbidden: Only vendors can update their own products.' });
     }
 
     await productRef.update(updates);
@@ -266,22 +304,8 @@ export async function deleteProduct(req, res) {
   try {
     const productId = req.params.id;
 
-    const productRef = firestore.collection('products').doc(productId);
-    const productDoc = await productRef.get();
+    await firestore.collection('products').doc(productId).delete();
 
-    if (!productDoc.exists) {
-      return res.status(404).send({ message: 'Product not found.' });
-    }
-
-    const productData = productDoc.data();
-
-    if (req.user.role !== 'vendor' || productData.business_id !== req.user.user_id) {
-      return res.status(403).send({ message: 'Forbidden: Only vendors can delete their own products.' });
-    }
-
-    await productRef.delete();
-
-    // Log product deletion
     await logEvent('Product Deleted', req.user.user_id, { product_id: productId });
 
     res.status(200).send({ message: 'Product deleted successfully.' });

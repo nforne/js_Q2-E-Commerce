@@ -1,0 +1,87 @@
+/* Base Container Styling */
+.auth-container {
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tab Navigation */
+.auth-tabs {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.auth-tab {
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+.auth-tab.active {
+  font-weight: bold;
+  border-bottom: 3px solid #007bff; /* Blue for Sign In */
+}
+
+.auth-tab.signup.active {
+  border-bottom: 3px solid #28a745; /* Green for Sign Up */
+}
+
+/* Form Wrapper */
+.auth-form {
+  margin-top: 20px;
+}
+
+/* Buttons */
+.button-auth {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+.button-auth:hover {
+  filter: brightness(90%);
+}
+
+.button-signin {
+  background-color: #007bff;
+  color: white;
+}
+.button-signup {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Input Fields */
+.input-auth {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border 0.3s ease-in-out;
+}
+.input-auth:focus {
+  border-color: #007bff;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 15px;
+  }
+  .auth-tab {
+    font-size: 14px;
+  }
+  .button-auth {
+    font-size: 14px;
+  }
+}

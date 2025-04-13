@@ -8,6 +8,7 @@
 body {
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* Buttons */
@@ -18,11 +19,12 @@ button {
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color var(--transition-speed);
+  transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
 button:hover {
   background-color: rgba(0, 0, 0, 0.1);
+  transform: scale(1.05);
 }
 
 /* Form Inputs */
@@ -34,11 +36,13 @@ input, select, textarea {
   border-radius: var(--border-radius);
   background-color: var(--bg-color);
   color: var(--text-color);
+  transition: border-color var(--transition-speed);
 }
 
 input:focus, textarea:focus {
   outline: none;
   border-color: var(--accent-color);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 /* Utility Classes */
@@ -50,6 +54,7 @@ input:focus, textarea:focus {
 
 .flex {
   display: flex;
+  gap: var(--spacing);
 }
 
 .grid {

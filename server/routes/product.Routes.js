@@ -29,36 +29,45 @@ import {
   getProduct,
   updateProduct,
   deleteProduct,
+  getAllProducts,
   getProductsByUser,
   getProductsByCategory,
   getProductsByBusiness,
+  getProductsByIds,
 } from '../controllers/product.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Create a new product (Vendors and Admins)
-router.post('/', authenticateAndAuthorize(['productManagement'], null), createProduct);
+// Create a new product (Vendors only)
+router.post('/', authenticateAndAuthorize(['inventoryManagement'], 'vendor'), createProduct);
 
-// Read a specific product by ID (Anyone)
-router.get('/:id', getProduct);
+// Read a specific product by ID (Admins or Vendors)
+router.get('/:id', authenticateAndAuthorize([], null, true), getProduct);
 
-// Get products by vendor ID (User ID)
-router.get('/user/:user_id', getProductsByUser);
+// Get all products (Admins and Vendors)
+router.get('/', authenticateAndAuthorize(['reporting'], null), getAllProducts);
 
-// Get products by category ID (Anyone)
-router.get('/category/:category_id', getProductsByCategory);
+// Get products by user ID (Admins and vendors retrieving their own products)
+router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getProductsByUser);
 
-// Get products by business ID (Anyone)
-router.get('/business/:business_id', getProductsByBusiness);
+// Get products by category ID (Admins and vendors filtering products)
+router.get('/category/:category_id', authenticateAndAuthorize([], null, true), getProductsByCategory);
 
-// Update a product (Admins can update any product; Vendors can update their own)
+// Get products by business ID (Admins and vendors viewing products by business)
+router.get('/business/:business_id', authenticateAndAuthorize([], null, true), getProductsByBusiness);
+
+// Get multiple products by list of IDs (Any authenticated user)
+router.post('/list', authenticateAndAuthorize([], null, true), getProductsByIds);
+
+// Update a product (Admins or the original vendor)
 router.put('/:id', authenticateAndAuthorize([], null, true), updateProduct);
 
-// Delete a product (Admins can delete any product; Vendors can delete their own)
+// Delete a product (Admins or the original vendor)
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteProduct);
 
 export default router;
+
 
 
 */

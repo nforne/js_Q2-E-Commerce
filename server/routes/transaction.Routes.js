@@ -31,28 +31,32 @@ import {
   deleteTransaction,
   getAllTransactions,
   getTransactionsByUser,
+  getTransactionsByIds,
 } from '../controllers/transaction.Controller.js';
 import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Create a new transaction (Customers only)
-router.post('/', authenticateAndAuthorize(['transactionCreation'], 'customer'), createTransaction);
+// Create a new transaction (Authenticated customers)
+router.post('/', authenticateAndAuthorize(['shopping'], 'customer'), createTransaction);
 
-// Read a specific transaction by ID (Customers and Vendors linked to transaction)
+// Read a specific transaction by ID (Admins or transaction participants)
 router.get('/:id', authenticateAndAuthorize([], null, true), getTransaction);
 
-// Update a transaction's details by ID (Admins and Customers involved in transaction)
+// Get all transactions (Admins)
+router.get('/', authenticateAndAuthorize(['transactionManagement'], 'administrator'), getAllTransactions);
+
+// Get transactions by user ID (Admins or users retrieving their own transactions)
+router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getTransactionsByUser);
+
+// Get multiple transactions by list of IDs (Any authenticated user)
+router.post('/list', authenticateAndAuthorize([], null, true), getTransactionsByIds);
+
+// Update a transaction (Admins or the original user)
 router.put('/:id', authenticateAndAuthorize([], null, true), updateTransaction);
 
-// Delete a transaction by ID (Admins and Customers involved in transaction)
+// Delete a transaction (Admins or the original user)
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteTransaction);
-
-// Get all transactions (Admins only)
-router.get('/', authenticateAndAuthorize(['reporting'], 'administrator'), getAllTransactions);
-
-// Get transactions by user ID (Customers only for their transactions)
-router.get('/user/:user_id', authenticateAndAuthorize([], null, true), getTransactionsByUser);
 
 export default router;
 

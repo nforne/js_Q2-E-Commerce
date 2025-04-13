@@ -132,23 +132,24 @@ const transactionSchema = Joi.object({
   notes: Joi.string().max(500).optional(), // Optional field
 });
 
+// Joi schema for transaction ID list validation
+const transactionIdListSchema = Joi.object({
+  transaction_ids: Joi.array().items(Joi.string()).min(1).required(),
+});
+
 // Create a new transaction
 export async function createTransaction(req, res) {
   try {
-    // Validate user input
     const { error } = transactionSchema.validate(req.body);
     if (error) return res.status(400).send({ message: error.details[0].message });
 
     const transactionData = req.body;
 
-    // Generate a unique transaction ID
     const transactionRef = firestore.collection('transactions').doc();
     const transactionId = transactionRef.id;
 
-    // Add transaction ID to the transaction object
     const completeTransactionData = { ...transactionData, transaction_id: transactionId };
 
-    // Save the transaction in Firestore
     await transactionRef.set(completeTransactionData);
 
     // Log transaction creation
@@ -176,65 +177,6 @@ export async function getTransaction(req, res) {
   }
 }
 
-// Update a transaction's details by ID
-export async function updateTransaction(req, res) {
-  try {
-    const transactionId = req.params.id;
-    const updates = req.body;
-
-    // Make all fields optional for updates
-    const updateSchema = transactionSchema.fork(
-      Object.keys(transactionSchema.describe().keys),
-      (field) => field.optional()
-    );
-
-    // Validate the updates
-    const { error } = updateSchema.validate(updates);
-    if (error) return res.status(400).send({ message: error.details[0].message });
-
-    // Check if the transaction exists
-    const transactionRef = firestore.collection('transactions').doc(transactionId);
-    const transactionDoc = await transactionRef.get();
-    if (!transactionDoc.exists) {
-      return res.status(404).send({ message: 'Transaction not found' });
-    }
-
-    // Update the transaction
-    await transactionRef.update(updates);
-
-    // Log transaction update
-    await logEvent('Transaction Updated', req.user.user_id, updates);
-
-    res.status(200).send({ message: 'Transaction updated successfully' });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
-// Delete a transaction by ID
-export async function deleteTransaction(req, res) {
-  try {
-    const transactionId = req.params.id;
-
-    // Check if transaction exists
-    const transactionRef = firestore.collection('transactions').doc(transactionId);
-    const transactionDoc = await transactionRef.get();
-    if (!transactionDoc.exists) {
-      return res.status(404).send({ message: 'Transaction not found' });
-    }
-
-    // Delete the transaction in Firestore
-    await transactionRef.delete();
-
-    // Log transaction deletion
-    await logEvent('Transaction Deleted', req.user.user_id, { transaction_id: transactionId });
-
-    res.status(200).send({ message: 'Transaction deleted successfully' });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-}
-
 // Get all transactions
 export async function getAllTransactions(req, res) {
   try {
@@ -245,9 +187,7 @@ export async function getAllTransactions(req, res) {
     }
 
     const transactions = [];
-    transactionSnapshot.forEach((doc) => {
-      transactions.push(doc.data());
-    });
+    transactionSnapshot.forEach((doc) => transactions.push(doc.data()));
 
     res.status(200).send(transactions);
   } catch (error) {
@@ -260,15 +200,9 @@ export async function getTransactionsByUser(req, res) {
   try {
     const userId = req.params.user_id;
 
-    // Validate user ID
-    const userValidationSchema = Joi.object({
-      user_id: Joi.string().required(),
-    });
-
-    const { error } = userValidationSchema.validate({ user_id: userId });
-    if (error) return res.status(400).send({ message: error.details[0].message });
-
-    const transactionSnapshot = await firestore.collection('transactions').where('user_id', '==', userId).get();
+    const transactionSnapshot = await firestore.collection('transactions')
+      .where('user_id', '==', userId)
+      .get();
 
     if (transactionSnapshot.empty) {
       return res.status(404).send({ message: 'No transactions found for this user.' });
@@ -282,6 +216,85 @@ export async function getTransactionsByUser(req, res) {
     res.status(500).send({ error: error.message });
   }
 }
+
+// Get multiple transactions by list of IDs
+export async function getTransactionsByIds(req, res) {
+  try {
+    const { error } = transactionIdListSchema.validate(req.body);
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const { transaction_ids } = req.body;
+
+    const transactionSnapshot = await firestore.collection('transactions')
+      .where('transaction_id', 'in', transaction_ids)
+      .get();
+
+    if (transactionSnapshot.empty) {
+      return res.status(404).send({ message: 'No transactions found for the given IDs.' });
+    }
+
+    const transactions = [];
+    transactionSnapshot.forEach(doc => transactions.push(doc.data()));
+
+    res.status(200).send(transactions);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Update a transaction
+export async function updateTransaction(req, res) {
+  try {
+    const transactionId = req.params.id;
+    const updates = req.body;
+
+    const updateSchema = transactionSchema.fork(
+      Object.keys(transactionSchema.describe().keys),
+      (field) => field.optional()
+    );
+
+    const { error } = updateSchema.validate(updates);
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const transactionRef = firestore.collection('transactions').doc(transactionId);
+    const transactionDoc = await transactionRef.get();
+    if (!transactionDoc.exists) {
+      return res.status(404).send({ message: 'Transaction not found' });
+    }
+
+    await transactionRef.update(updates);
+
+    // Log transaction update
+    await logEvent('Transaction Updated', req.user.user_id, updates);
+
+    res.status(200).send({ message: 'Transaction updated successfully' });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Delete a transaction
+export async function deleteTransaction(req, res) {
+  try {
+    const transactionId = req.params.id;
+
+    const transactionRef = firestore.collection('transactions').doc(transactionId);
+    const transactionDoc = await transactionRef.get();
+    if (!transactionDoc.exists) {
+      return res.status(404).send({ message: 'Transaction not found' });
+    }
+
+    await transactionRef.delete();
+
+    // Log transaction deletion
+    await logEvent('Transaction Deleted', req.user.user_id, { transaction_id: transactionId });
+
+    res.status(200).send({ message: 'Transaction deleted successfully' });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
 
 
 */

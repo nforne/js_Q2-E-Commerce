@@ -2,32 +2,6 @@
   --bg-color: #FFFFFF;
   --text-color: #000000;
   --accent-color: #007BFF;
-}
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.theme-toggle button {
-  padding: 10px;
-  margin: 5px;
-  cursor: pointer;
-  border: none;
-  background-color: var(--accent-color);
-  color: var(--text-color);
-}
-
-.theme-toggle .active {
-  border: 2px solid var(--text-color);
-}
-
-
-:root {
-  --bg-color: #FFFFFF;
-  --text-color: #000000;
-  --accent-color: #007BFF;
   --border-radius: 6px;
   --spacing: 10px;
   --transition-speed: 0.3s;
@@ -59,4 +33,20 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Theme Toggle Button */
+.theme-toggle button {
+  padding: var(--spacing);
+  margin: var(--spacing);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  transition: all var(--transition-speed);
+}
+
+.theme-toggle .active {
+  border: 2px solid var(--text-color);
+  font-weight: bold;
 }

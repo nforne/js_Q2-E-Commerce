@@ -1,5 +1,71 @@
 import { createContext, useState, useEffect } from "react";
 import { mockCart } from "../mockData/mockCart";
+import { encryptData, decryptData } from "../utils/security"; // Secure storage utilities
+import { migrateCasualData } from "../utils/storage"; // Handles local-to-backend data migration
+import { useAuth } from "./AuthContext"; // Import authentication for transition handling
+
+export const CartContext = createContext();
+
+export const CartProvider = ({ children }) => {
+  const { isAuthenticated, user } = useAuth(); // Get authentication state
+  const [cartItems, setCartItems] = useState(() => {
+    const storedCart = localStorage.getItem("js-q2-ec-cart");
+    return storedCart ? decryptData(storedCart) : mockCart;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("js-q2-ec-cart", encryptData(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      migrateCasualData(user.user_id, { cartItems });
+      localStorage.removeItem("js-q2-ec-cart"); // Cleanup local storage after migration
+    }
+  }, [isAuthenticated, user]);
+
+  const addItem = (product) => {
+    setCartItems((prev) => {
+      const existingItem = prev.find((item) => item.id === product.id);
+      if (existingItem) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      } else {
+        return [...prev, { ...product, quantity: 1 }];
+      }
+    });
+  };
+
+  const updateQuantity = (id, quantity) => {
+    setCartItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item))
+    );
+  };
+
+  const removeItem = (id) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem("js-q2-ec-cart");
+  };
+
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  return (
+    <CartContext.Provider value={{ cartItems, addItem, updateQuantity, removeItem, clearCart, total }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+
+
+`
+import { createContext, useState, useEffect } from "react";
+import { mockCart } from "../mockData/mockCart";
 
 export const CartContext = createContext();
 
@@ -48,3 +114,5 @@ export const CartProvider = ({ children }) => {
     </CartContext.Provider>
   );
 };
+
+`

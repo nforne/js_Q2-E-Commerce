@@ -123,6 +123,11 @@ const messageSchema = Joi.object({
   is_read: Joi.boolean().optional(),
 });
 
+// Joi schema for message ID list validation
+const messageIdListSchema = Joi.object({
+  message_ids: Joi.array().items(Joi.string()).min(1).required(),
+});
+
 // Create a new message
 export async function createMessage(req, res) {
   try {
@@ -196,18 +201,28 @@ export async function getMessage(req, res) {
   }
 }
 
+// Get all messages
+export async function getAllMessages(req, res) {
+  try {
+    const messageSnapshot = await firestore.collection('messages').get();
+
+    if (messageSnapshot.empty) {
+      return res.status(404).send({ message: 'No messages found.' });
+    }
+
+    const messages = [];
+    messageSnapshot.forEach(doc => messages.push(doc.data()));
+
+    res.status(200).send(messages);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
 // Get messages by user ID (Includes sent and received messages)
 export async function getMessagesByUser(req, res) {
   try {
     const userId = req.params.user_id;
-
-    // Validate user ID
-    const userValidationSchema = Joi.object({
-      user_id: Joi.string().required(),
-    });
-
-    const { error } = userValidationSchema.validate({ user_id: userId });
-    if (error) return res.status(400).send({ message: error.details[0].message });
 
     const messageSnapshot = await firestore.collection('messages')
       .where('sender_id', '==', userId)
@@ -236,20 +251,37 @@ export async function getMessagesByTransaction(req, res) {
   try {
     const transactionId = req.params.transaction_id;
 
-    // Validate transaction ID
-    const transactionValidationSchema = Joi.object({
-      transaction_id: Joi.string().required(),
-    });
-
-    const { error } = transactionValidationSchema.validate({ transaction_id: transactionId });
-    if (error) return res.status(400).send({ message: error.details[0].message });
-
     const messageSnapshot = await firestore.collection('messages')
       .where('transaction_id', '==', transactionId)
       .get();
 
     if (messageSnapshot.empty) {
       return res.status(404).send({ message: 'No messages found for this transaction.' });
+    }
+
+    const messages = [];
+    messageSnapshot.forEach(doc => messages.push(doc.data()));
+
+    res.status(200).send(messages);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Get multiple messages by list of IDs
+export async function getMessagesByIds(req, res) {
+  try {
+    const { error } = messageIdListSchema.validate(req.body);
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const { message_ids } = req.body;
+
+    const messageSnapshot = await firestore.collection('messages')
+      .where('message_id', 'in', message_ids)
+      .get();
+
+    if (messageSnapshot.empty) {
+      return res.status(404).send({ message: 'No messages found for the given IDs.' });
     }
 
     const messages = [];
@@ -283,6 +315,7 @@ export async function deleteMessage(req, res) {
     res.status(500).send({ error: error.message });
   }
 }
+
 
 
 */

@@ -122,6 +122,11 @@ const reviewSchema = Joi.object({
   comment: Joi.string().max(500).required(),
 });
 
+// Joi schema for review ID list validation
+const reviewIdListSchema = Joi.object({
+  review_ids: Joi.array().items(Joi.string()).min(1).required(),
+});
+
 // Create a new review
 export async function createReview(req, res) {
   try {
@@ -155,6 +160,40 @@ export async function createReview(req, res) {
     await logEvent('Review Created', req.user.user_id, { reviewId, vendor_id, product_id, rating, comment });
 
     res.status(201).send({ message: 'Review created successfully.', reviewId });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Read a specific review by ID
+export async function getReview(req, res) {
+  try {
+    const reviewId = req.params.id;
+    const reviewDoc = await firestore.collection('reviews').doc(reviewId).get();
+
+    if (!reviewDoc.exists) {
+      return res.status(404).send({ message: 'Review not found.' });
+    }
+
+    res.status(200).send(reviewDoc.data());
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Get all reviews
+export async function getAllReviews(req, res) {
+  try {
+    const reviewSnapshot = await firestore.collection('reviews').get();
+
+    if (reviewSnapshot.empty) {
+      return res.status(404).send({ message: 'No reviews found.' });
+    }
+
+    const reviews = [];
+    reviewSnapshot.forEach(doc => reviews.push(doc.data()));
+
+    res.status(200).send(reviews);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -263,10 +302,36 @@ export async function getReviewsByUserProduct(req, res) {
   }
 }
 
-// Delete a review
-export async function deleteReview(req, res) {
+// Get multiple reviews by list of IDs
+export async function getReviewsByIds(req, res) {
+  try {
+    const { error } = reviewIdListSchema.validate(req.body);
+    if (error) return res.status(400).send({ message: error.details[0].message });
+
+    const { review_ids } = req.body;
+
+    const reviewSnapshot = await firestore.collection('reviews')
+      .where('review_id', 'in', review_ids)
+      .get();
+
+    if (reviewSnapshot.empty) {
+      return res.status(404).send({ message: 'No reviews found for the given IDs.' });
+    }
+
+    const reviews = [];
+    reviewSnapshot.forEach(doc => reviews.push(doc.data()));
+
+    res.status(200).send(reviews);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Update a review
+export async function updateReview(req, res) {
   try {
     const reviewId = req.params.id;
+    const updates = req.body;
 
     const reviewRef = firestore.collection('reviews').doc(reviewId);
     const reviewDoc = await reviewRef.get();
@@ -274,9 +339,24 @@ export async function deleteReview(req, res) {
       return res.status(404).send({ message: 'Review not found.' });
     }
 
-    await reviewRef.delete();
+    await reviewRef.update(updates);
 
-    // Log review deletion
+    // Log review update
+    await logEvent('Review Updated', req.user.user_id, updates);
+
+    res.status(200).send({ message: 'Review updated successfully.' });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+}
+
+// Delete a review
+export async function deleteReview(req, res) {
+  try {
+    const reviewId = req.params.id;
+
+    await firestore.collection('reviews').doc(reviewId).delete();
+
     await logEvent('Review Deleted', req.user.user_id, { reviewId });
 
     res.status(200).send({ message: 'Review deleted successfully.' });
