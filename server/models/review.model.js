@@ -1,5 +1,8 @@
-import { firestore as _firestore } from '../firebase/firebaseConfig';
 import ContentContext from './content.text.model.js';
+import gDB from '../config/firebaseConfig.js';
+
+// Reference Firestore
+const firestore = gDB.db;
 
 class Review {
   constructor(

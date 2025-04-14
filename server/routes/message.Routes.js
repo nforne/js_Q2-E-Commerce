@@ -1,29 +1,4 @@
 import { Router } from 'express';
-import { createMessage, getMessage, updateMessage, deleteMessage, getAllMessages } from '../controllers/message.Controller.js';
-
-const router = Router();
-
-// Create a new message
-router.post('/', createMessage);
-
-// Read a specific message by ID
-router.get('/:id', getMessage);
-
-// Update a message's details by ID
-router.put('/:id', updateMessage);
-
-// Delete a message by ID
-router.delete('/:id', deleteMessage);
-
-// Get all messages (optional)
-router.get('/', getAllMessages);
-
-export default router;
-
-
-// -----------------------------------------------------------------------------------------------------------
-/*
-import { Router } from 'express';
 import {
   createMessage,
   getMessage,
@@ -33,7 +8,7 @@ import {
   getMessagesByIds,
   getAllMessages,
 } from '../controllers/message.Controller.js';
-import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
+import { authenticateAndAuthorize } from '../controllers/security/authMiddleware.js';
 
 const router = Router();
 
@@ -59,6 +34,35 @@ router.post('/list', authenticateAndAuthorize([], null, true), getMessagesByIds)
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteMessage);
 
 export default router;
+
+
+
+`import { Router } from 'express';
+import { createMessage, getMessage, updateMessage, deleteMessage, getAllMessages } from '../controllers/message.Controller.js';
+
+const router = Router();
+
+// Create a new message
+router.post('/', createMessage);
+
+// Read a specific message by ID
+router.get('/:id', getMessage);
+
+// Update a message's details by ID
+router.put('/:id', updateMessage);
+
+// Delete a message by ID
+router.delete('/:id', deleteMessage);
+
+// Get all messages (optional)
+router.get('/', getAllMessages);
+
+export default router;`
+
+
+// -----------------------------------------------------------------------------------------------------------
+/*
+
 
 
 */

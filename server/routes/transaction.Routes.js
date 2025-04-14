@@ -1,29 +1,4 @@
 import { Router } from 'express';
-import { createTransaction, getTransaction, updateTransaction, deleteTransaction, getAllTransactions } from '../controllers/transaction.Controller.js';
-
-const router = Router();
-
-// Create a new transaction
-router.post('/', createTransaction);
-
-// Read a specific transaction by ID
-router.get('/:id', getTransaction);
-
-// Update a transaction's details by ID
-router.put('/:id', updateTransaction);
-
-// Delete a transaction by ID
-router.delete('/:id', deleteTransaction);
-
-// Get all transactions (optional for vendors or admins)
-router.get('/', getAllTransactions);
-
-export default router;
-
-// -----------------------------------------------------------------------------------------------------------
-/*
-
-import { Router } from 'express';
 import {
   createTransaction,
   getTransaction,
@@ -33,7 +8,7 @@ import {
   getTransactionsByUser,
   getTransactionsByIds,
 } from '../controllers/transaction.Controller.js';
-import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
+import { authenticateAndAuthorize } from '../controllers/security/authMiddleware.js';
 
 const router = Router();
 
@@ -59,6 +34,35 @@ router.put('/:id', authenticateAndAuthorize([], null, true), updateTransaction);
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteTransaction);
 
 export default router;
+
+
+
+`import { Router } from 'express';
+import { createTransaction, getTransaction, updateTransaction, deleteTransaction, getAllTransactions } from '../controllers/transaction.Controller.js';
+
+const router = Router();
+
+// Create a new transaction
+router.post('/', createTransaction);
+
+// Read a specific transaction by ID
+router.get('/:id', getTransaction);
+
+// Update a transaction's details by ID
+router.put('/:id', updateTransaction);
+
+// Delete a transaction by ID
+router.delete('/:id', deleteTransaction);
+
+// Get all transactions (optional for vendors or admins)
+router.get('/', getAllTransactions);
+
+export default router;`
+
+// -----------------------------------------------------------------------------------------------------------
+/*
+
+
 
 
 

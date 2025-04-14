@@ -1,4 +1,4 @@
-import { Stack } from "./stack.model.js";
+import Stack from "./stack.model.js";
 
 class ContentContext {
   constructor(text) {

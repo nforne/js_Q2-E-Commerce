@@ -53,20 +53,20 @@ class Stack {
 
 export default Stack
 
-//Example usage
-const stack = new Stack();
-stack.push(10);
-stack.push(20);
-stack.push(30);
+// //Example usage
+// const stack = new Stack();
+// stack.push(10);
+// stack.push(20);
+// stack.push(30);
 
-console.log("Top element:", stack.peek());   // Output: 30
-console.log("Stack size:", stack.size());    // Output: 3
+// console.log("Top element:", stack.peek());   // Output: 30
+// console.log("Stack size:", stack.size());    // Output: 3
 
-stack.print();                               // Output: 10 -> 20 -> 30
+// stack.print();                               // Output: 10 -> 20 -> 30
 
-console.log("Popped:", stack.pop());         // Output: 30
-stack.print();                               // Output: 10 -> 20
+// console.log("Popped:", stack.pop());         // Output: 30
+// stack.print();                               // Output: 10 -> 20
 
-console.log("Is Empty?", stack.isEmpty());   // Output: false
-stack.clear();
-console.log("Is Empty after clearing?", stack.isEmpty());  // Output: true
+// console.log("Is Empty?", stack.isEmpty());   // Output: false
+// stack.clear();
+// console.log("Is Empty after clearing?", stack.isEmpty());  // Output: true

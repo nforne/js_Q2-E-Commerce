@@ -1,29 +1,4 @@
 import { Router } from 'express';
-import { createProduct, getProduct, updateProduct, deleteProduct, getAllProducts } from '../controllers/product.Controller.js';
-
-const router = Router();
-
-// Create a new product
-router.post('/', createProduct);
-
-// Read a specific product by ID
-router.get('/:id', getProduct);
-
-// Update a product's details by ID
-router.put('/:id', updateProduct);
-
-// Delete a product by ID
-router.delete('/:id', deleteProduct);
-
-// Get all products (optional)
-router.get('/', getAllProducts);
-
-export default router;
-
-
-// -----------------------------------------------------------------------------------------------------------
-/*
-import { Router } from 'express';
 import {
   createProduct,
   getProduct,
@@ -35,7 +10,7 @@ import {
   getProductsByBusiness,
   getProductsByIds,
 } from '../controllers/product.Controller.js';
-import { authenticateAndAuthorize } from '../middleware/authMiddleware.js';
+import { authenticateAndAuthorize } from '../controllers/security/authMiddleware.js';
 
 const router = Router();
 
@@ -67,6 +42,35 @@ router.put('/:id', authenticateAndAuthorize([], null, true), updateProduct);
 router.delete('/:id', authenticateAndAuthorize([], null, true), deleteProduct);
 
 export default router;
+
+
+
+`import { Router } from 'express';
+import { createProduct, getProduct, updateProduct, deleteProduct, getAllProducts } from '../controllers/product.Controller.js';
+
+const router = Router();
+
+// Create a new product
+router.post('/', createProduct);
+
+// Read a specific product by ID
+router.get('/:id', getProduct);
+
+// Update a product's details by ID
+router.put('/:id', updateProduct);
+
+// Delete a product by ID
+router.delete('/:id', deleteProduct);
+
+// Get all products (optional)
+router.get('/', getAllProducts);
+
+export default router;`
+
+
+// -----------------------------------------------------------------------------------------------------------
+/*
+
 
 
 
