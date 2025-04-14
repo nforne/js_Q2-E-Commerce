@@ -1,4 +1,5 @@
 import Stack from "../models.js/stack.model.js";
+import pic from "../assets/default-avatar.js";
 
 const UserRoleEnum = Object.freeze({
   CASUAL: "casual",
@@ -14,7 +15,7 @@ const rootAdmin = {
   email: "admin@q2-commerce.com",
   password: "SuperSecurePassword123", // Should be hashed
   created_at: new Date().toISOString(),
-  picture: "/admin-avatar.png",
+  picture: pic || "/admin-avatar.png",
   role: UserRoleEnum.ADMINISTRATOR,
   shopping_cart: [],
   transactions: [],
@@ -28,6 +29,10 @@ const rootAdmin = {
       if (!this.archive.toArray().includes(newDefault)) this.archive.push(newDefault);
       this.default = newDefault;
     }
+    setAddresses(obj){
+      this.default = obj.default;
+      this.archive = obj.archive;
+    }
   }(),
   payment_methods: new class {
     constructor() {
@@ -38,6 +43,10 @@ const rootAdmin = {
     update(newDefault) {
       if (!this.archive.toArray().includes(newDefault)) this.archive.push(newDefault);
       this.default = newDefault;
+    }
+    setPayment_methods(obj){
+      this.default = obj.default;
+      this.archive = obj.archive;
     }
   }(),
   privileges: {

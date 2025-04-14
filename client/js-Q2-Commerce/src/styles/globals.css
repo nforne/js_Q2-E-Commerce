@@ -13,7 +13,8 @@ body {
 
 /* Buttons */
 button {
-  background-color: var(--accent-color);
+  /* background-color: var(--accent-color); */
+  background-color: aquamarine;
   color: var(--text-color);
   padding: var(--spacing);
   border: none;

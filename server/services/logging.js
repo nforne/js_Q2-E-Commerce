@@ -1,5 +1,5 @@
 import gDB from '../config/firebaseConfig.js';
-import AuditLog from '../models/auditLog.model.js';
+import AuditLog from '../models/auditlog.model.js';
 
 const firestore = gDB.db;
 

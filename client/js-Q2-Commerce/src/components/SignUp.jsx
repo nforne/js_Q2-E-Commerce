@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { convertImageToBase64 } from "../utils/imageUtils";
 import "../styles/SignUp.css"; // Importing the CSS file for styling

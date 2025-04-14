@@ -1,14 +1,14 @@
 import { forEach, values } from "lodash";
 import Stack from "./stack.model.js";
 
-const UserRoleEnum = Object.freeze({
+export const UserRoleEnum = Object.freeze({
   CASUAL: "casual",
   CUSTOMER: "customer",
   VENDOR: "vendor",
   ADMINISTRATOR: "administrator",
 });
 
-class User {
+export class User {
   constructor(
     user_id,
     first_name,
@@ -152,11 +152,4 @@ class User {
       (message) => message.receiver_id === this.user_id
     );
   }
-}
-
-export default { User, UserRoleEnum };
-
-// -----------------------------------------------------------------------------------------------------------
-/*
-
-*/
+};

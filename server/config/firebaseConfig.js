@@ -4,11 +4,11 @@ import { createRequire } from 'module';
 
 // Use createRequire to import JSON in CommonJS
 const require = createRequire(import.meta.url);
-const serviceAccount = require('./future-logic-e-commerce-firebase-adminsdk-fbsvc-abb28c8f24.json');
+const serviceAccount = require('./q2-commerce-firebase-adminsdk-fbsvc-80326e6255.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount), 
-  databaseURL: 'https://future-logic-e-commerce.firebaseio.com',
+  databaseURL: 'https://q2-commerce.firebaseio.com',
 });
 
 const db = admin.firestore();

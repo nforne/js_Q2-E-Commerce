@@ -25,8 +25,8 @@ button {
   padding: 10px;
   border: none;
   border-radius: var(--border-radius);
-  background-color: var(--accent-color);
-  color: var(--text-color);
+  /* background-color: var(--accent-color); */
+  /* color: var(--text-color); */
   cursor: pointer;
   font-weight: bold;
 }
